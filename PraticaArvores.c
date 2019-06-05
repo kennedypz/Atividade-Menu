@@ -41,8 +41,6 @@ void menu(){
   int n = 1, valor, i,valoresNewTree;
   t_arvore arv = loadTree();
   
-  
-  
   while(n != 0){
     printf("------------------------------------------------\n");
     printf("|ALUNO: PAULO KENNEDY TAVARES REIS/1810023234  |\n");
@@ -65,16 +63,19 @@ void menu(){
         printf("Programa encerrado.");
         return;
       case 1:
+      	system("cls");
         printf("Informe o valor que deseja inserir: ");
         scanf("%d", &valor);
         inserir(&arv, valor);
         break;
       case 2:
+      	system("cls");
       	printf("Informe o valor que deseja remover: ");
         scanf("%d", &valor);
         remover(&arv, valor);
         break;
       case 3:
+      	system("cls");
       	printf("Por qual valor deseja procurar?\n");
       	scanf("%d", &valor);
         pesquisar(arv, valor);
@@ -83,13 +84,15 @@ void menu(){
         esvaziar(&arv);
         break;
       case 5:
+      	system("cls");
         exibir(arv, 10, 10, 3);
+        printf("\n\n");
         break;
     }
   }
 }
 
-int inserir (t_arvore *tree, int item){
+int inserir(t_arvore *tree, int item){
   int ok;
   if(*tree == NULL) {
     *tree = criar();
@@ -98,10 +101,11 @@ int inserir (t_arvore *tree, int item){
       (*tree)->dado = item;
       return 1;
     }
-  if(compara((*tree)->dado, item) < 0)
+    
+  if(compara((*tree)->dado, item) == 2)
     ok = inserir (&((*tree)->dir), item);
   else
-    if (compara((*tree)->dado, item)>0)
+    if (compara((*tree)->dado, item) == 1)
       ok = inserir (&((*tree)->esq), item);
       else
         ok = 0;
@@ -176,7 +180,7 @@ t_no * pesquisar(t_arvore tree, int dado){
     return NULL;
   }
 
-  if(compara(tree->dado, dado)==0){
+  if(compara(tree->dado, dado) == 0){
   	printf("O valor %d está na arvore.\n\n", dado);
     return tree;
   }
@@ -216,13 +220,17 @@ void exibir(t_arvore tree, int col, int lin, int desloc){
 }
 
 int compara(int dado, int dado1){
-
-  if(dado == dado1){
-    return 0;
+	int r;
+  if((dado - dado1) == 0){
+    r = 0;
   }
-  else{
-    return 1;
+  else if((dado - dado1) > 0){
+    r = 1;
   }
+  else if((dado - dado1) < 0){
+    r = 2;
+  }
+  return r;
 }
 
 void gotoxy(int coluna, int linha){
@@ -245,9 +253,9 @@ t_arvore loadTree(){
     	return 0;
 	}
 	//define o tamanho da linha
-	char linha [10];
+	char linha [60];
 	//le a linha
-	fgets(linha, 10, arquivo);
+	fgets(linha, 60, arquivo);
 	//se o arquivo estiver vazio, printa mensagem e retorna 0
 	if(feof(arquivo)) {
       printf("Não há dados para serem inseridos na árvore.\n");
@@ -261,7 +269,7 @@ t_arvore loadTree(){
 	t_no * aux = lista;
 	
 	//enquanto não for o fim do arquivo, repete o processo anterior
-	while(!feof(arquivo)) {
+	while(!feof(arquivo)){
         t_no * novo = (t_no*) malloc (sizeof(t_no));
             
         if(!novo) {
@@ -270,7 +278,7 @@ t_arvore loadTree(){
 
         novo->dado = atoi(strtok(linha, ","));
         inserir(&lista, novo->dado);
-        fgets(linha, 10, arquivo);
+        fgets(linha, 60, arquivo);
     }
     fclose(arquivo);
     return lista;
