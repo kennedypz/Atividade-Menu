@@ -6,13 +6,13 @@
 #include <ctype.h>
 #include <time.h>
 
-typedef struct elementos {
+/*typedef struct elementos {
   int numero;	
-}t_elemento;
+}t_elemento;*/
 
 typedef struct no {
   struct no * esq;
-  t_elemento dado;
+  int dado;
   struct no * dir;
 }t_no;
 
@@ -20,14 +20,15 @@ typedef t_no* t_arvore;
 
 void menu();
 t_no * criar();
-t_no * buscaSetPai(t_arvore tree, t_elemento dado, t_no ** pai);
-int inserir (t_arvore *tree, t_elemento item);
-int remover (t_arvore *tree, t_elemento item);
-t_no * pesquisar(t_arvore tree, t_elemento dado);
+t_no * buscaSetPai(t_arvore tree, int dado, t_no ** pai);
+int inserir (t_arvore *tree, int item);
+int remover (t_arvore *tree, int item);
+t_no * pesquisar(t_arvore tree, int dado);
 void esvaziar(t_arvore *tree);
 void exibir(t_arvore tree, int col, int lin, int desloc);
-int compara(t_elemento dado, t_elemento dado1);
+int compara(int dado, int dado1);
 void gotoxy(int coluna, int linha);
+t_no * loadTree();
 
 
 int main() {
@@ -38,14 +39,9 @@ int main() {
 
 void menu(){
   int n = 1, valor, i,valoresNewTree;
-  t_arvore *arv;
+  t_arvore arv = loadTree();
   
-  /*for(i = 0; i <10; i++){
-  	srand(time(NULL));
-    rand();
-	(*arv)->dado.numero = rand() % 100;
-  	inserir(&(*arv), (*arv)->dado);
-  }*/
+  
   
   while(n != 0){
     printf("------------------------------------------------\n");
@@ -53,13 +49,13 @@ void menu(){
     printf("|DISCIPLINA: ESTRUTURA DE DADOS I              |\n");
     printf("|PROFESSOR: WALACE BONFIM                      |\n");
     printf("|                                              |\n");
-    printf("|            EDITOR DE �RVORE                  |\n");
+    printf("|            EDITOR DE ÁRVORE                  |\n");
     printf("|                                              |\n");
     printf("|1 - INSERIR                                   |\n");
-    printf("|2 � REMOVER APENAS UM N�                      |\n");
-    printf("|3 � PESQUISAR                                 |\n");
-    printf("|4 � ESVAZIAR A �RVORE                         |\n");
-    printf("|5 � EXIBIR A �RVORE                           |\n");
+    printf("|2 – REMOVER APENAS UM NÓ                      |\n");
+    printf("|3 – PESQUISAR                                 |\n");
+    printf("|4 – ESVAZIAR A ÁRVORE                         |\n");
+    printf("|5 – EXIBIR A ÁRVORE                           |\n");
     printf("|0 - SAIR                                      |\n");
     printf("------------------------------------------------\n");
     scanf("%d", &n);
@@ -71,25 +67,29 @@ void menu(){
       case 1:
         printf("Informe o valor que deseja inserir: ");
         scanf("%d", &valor);
-        //inserir();
+        inserir(&arv, valor);
         break;
       case 2:
-        //remover();
+      	printf("Informe o valor que deseja remover: ");
+        scanf("%d", &valor);
+        remover(&arv, valor);
         break;
       case 3:
-        //pesquisar();
+      	printf("Por qual valor deseja procurar?\n");
+      	scanf("%d", &valor);
+        pesquisar(arv, valor);
         break;
       case 4:
-        //esvaziar();
+        esvaziar(&arv);
         break;
       case 5:
-        //exibir();
+        exibir(arv, 10, 10, 3);
         break;
     }
   }
 }
 
-int inserir (t_arvore *tree, t_elemento item){
+int inserir (t_arvore *tree, int item){
   int ok;
   if(*tree == NULL) {
     *tree = criar();
@@ -117,7 +117,7 @@ t_no * criar(){
   return no;
 }
 
-int remover (t_arvore *tree, t_elemento item){
+int remover (t_arvore *tree, int item){
   t_no *no, *pai, *sub, *paiSuce, *suce; 
   
   no = *tree; pai=NULL;
@@ -151,7 +151,7 @@ int remover (t_arvore *tree, t_elemento item){
   return 1;
 }
 
-t_no * buscaSetPai(t_arvore tree, t_elemento dado, t_no ** pai){
+t_no * buscaSetPai(t_arvore tree, int dado, t_no ** pai){
   if(tree == NULL) {
     *pai = NULL;
     return NULL;
@@ -171,20 +171,23 @@ t_no * buscaSetPai(t_arvore tree, t_elemento dado, t_no ** pai){
   }
 }
 
-t_no * pesquisar(t_arvore tree, t_elemento dado){
+t_no * pesquisar(t_arvore tree, int dado){
   if(tree == NULL){
     return NULL;
   }
 
   if(compara(tree->dado, dado)==0){
+  	printf("O valor %d está na arvore.\n\n", dado);
     return tree;
   }
 
-  if(compara(tree->dado, dado)>0){
+  if(compara(tree->dado, dado)!=0){
+  	printf("O valor %d não está na arvore.\n\n", dado);
     return pesquisar(tree->esq, dado);
   }
   else{
     return pesquisar(tree->dir, dado);
+    printf("pesquisa 3");
   }
 }
 
@@ -203,7 +206,7 @@ void exibir(t_arvore tree, int col, int lin, int desloc){
     return;
   }
   gotoxy(col,lin);
-  printf("%d",tree->dado.numero);
+  printf("%d",tree->dado);
   if(tree->esq != NULL){
     exibir(tree->esq,col-desloc,lin+2,desloc/2+1);
   }
@@ -212,11 +215,9 @@ void exibir(t_arvore tree, int col, int lin, int desloc){
   }
 }
 
-int compara(t_elemento dado, t_elemento dado1){
-  int n1, n2;
-  n1 = dado.numero;
+int compara(int dado, int dado1){
 
-  if(dado.numero == dado1.numero){
+  if(dado == dado1){
     return 0;
   }
   else{
@@ -229,4 +230,48 @@ void gotoxy(int coluna, int linha){
 	point.X = coluna;
 	point.Y = linha;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), point);
+}
+
+t_arvore loadTree(){
+	FILE * arquivo = fopen("tree.txt", "r");
+	//checa a abertura do arquivo
+	if(!arquivo){
+		return 0;
+	}
+	//aloca um ponteiro pra t_arvore
+    t_no * lista = (t_no*) malloc (sizeof(t_no));
+    //checa a alocação
+    if(!lista) {
+    	return 0;
+	}
+	//define o tamanho da linha
+	char linha [10];
+	//le a linha
+	fgets(linha, 10, arquivo);
+	//se o arquivo estiver vazio, printa mensagem e retorna 0
+	if(feof(arquivo)) {
+      printf("Não há dados para serem inseridos na árvore.\n");
+      return 0;
+	}
+	//variavel para receber o valor do número lido no arquivo, separando-os nas virgulas
+	char * valor = strtok(linha, ",");
+	//convertendo o valor obtido anteriormente e atribuindo-o ao dado da arvore
+	lista->dado = atoi(valor);
+	//auxiliar pra não perder o anterior
+	t_no * aux = lista;
+	
+	//enquanto não for o fim do arquivo, repete o processo anterior
+	while(!feof(arquivo)) {
+        t_no * novo = (t_no*) malloc (sizeof(t_no));
+            
+        if(!novo) {
+        	return 0;
+		}
+
+        novo->dado = atoi(strtok(linha, ","));
+        inserir(&lista, novo->dado);
+        fgets(linha, 10, arquivo);
+    }
+    fclose(arquivo);
+    return lista;
 }
