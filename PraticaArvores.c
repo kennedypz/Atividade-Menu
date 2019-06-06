@@ -6,10 +6,6 @@
 #include <ctype.h>
 #include <time.h>
 
-/*typedef struct elementos {
-  int numero;	
-}t_elemento;*/
-
 typedef struct no {
   struct no * esq;
   int dado;
@@ -26,6 +22,9 @@ int remover (t_arvore *tree, int item);
 t_no * pesquisar(t_arvore tree, int dado);
 void esvaziar(t_arvore *tree);
 void exibir(t_arvore tree, int col, int lin, int desloc);
+void exibirPreOrdem(t_arvore tree);
+void exibirInOrdem(t_arvore tree);
+void exibirPosOrdem(t_arvore tree);
 int compara(int dado, int dado1);
 void gotoxy(int coluna, int linha);
 t_no * loadTree();
@@ -38,7 +37,7 @@ int main() {
 }
 
 void menu(){
-  int n = 1, valor, i,valoresNewTree;
+  int n = 1, valor, i,valoresNewTree, continuar, resultado;
   t_arvore arv = loadTree();
   
   while(n != 0){
@@ -64,29 +63,66 @@ void menu(){
         return;
       case 1:
       	system("cls");
-        printf("Informe o valor que deseja inserir: ");
-        scanf("%d", &valor);
-        inserir(&arv, valor);
+      	do{
+	        printf("Informe o valor que deseja inserir: ");
+	        scanf("%d", &valor);
+	        inserir(&arv, valor);
+	        printf("Deseja inserir outro número?\n1 - Sim\n2 - Não\n");
+	        scanf("%d", &continuar);
+		}while(continuar != 2);
         break;
       case 2:
       	system("cls");
-      	printf("Informe o valor que deseja remover: ");
-        scanf("%d", &valor);
-        remover(&arv, valor);
+      	do{
+	      	printf("Informe o valor que deseja remover: ");
+	        scanf("%d", &valor);
+	        remover(&arv, valor);
+	        printf("Deseja remover outro número?\n1 - Sim\n2 - Não\n");
+			scanf("%d", &continuar);
+		}while(continuar != 2);
         break;
       case 3:
       	system("cls");
-      	printf("Por qual valor deseja procurar?\n");
-      	scanf("%d", &valor);
-        pesquisar(arv, valor);
+      	do{ 
+	      	printf("Por qual valor deseja procurar?\n");
+	      	scanf("%d", &valor);
+	      	
+	      	if(pesquisar(arv, valor)){
+	      		resultado = 1;
+			}else{
+				resultado = 0;
+			}
+			
+			if(resultado == 1){
+				printf("O valor %d está na árvore.\n\n", valor);
+			}else{
+				printf("O valor %d não está na árvore.\n\n", valor);
+			}
+			printf("Deseja procurar por outro número?\n1 - Sim\n2 - Não\n");
+		    scanf("%d", &continuar);
+		}while(continuar != 2);
         break;
       case 4:
         esvaziar(&arv);
         break;
       case 5:
       	system("cls");
-        exibir(arv, 10, 10, 3);
+      	printf("Graficamente:");
+        exibir(arv, 10, 2, 3);
         printf("\n\n");
+        
+        printf("Pre-ordem:\n");
+        exibirPreOrdem(arv);
+        printf("\n\n");
+        
+        printf("In-ordem:\n");
+        exibirInOrdem(arv);
+        printf("\n\n");
+        
+        printf("Pos-ordem:\n");
+        exibirPosOrdem(arv);
+        printf("\n\n");
+    
         break;
     }
   }
@@ -176,23 +212,26 @@ t_no * buscaSetPai(t_arvore tree, int dado, t_no ** pai){
 }
 
 t_no * pesquisar(t_arvore tree, int dado){
-  if(tree == NULL){
-    return NULL;
-  }
+	int aux;
+    t_no* achou;
+    if (tree == NULL){
+	    return NULL;
+	}
+	
+    if (compara(tree->dado, dado)==0){
+    	printf("O valor %d está na árvore.\n\n", dado);
+    	return tree;
+	}
+	else{
+		printf("O valor %d não está na árvore.\n\n", dado);
+	}
+        
+    achou = pesquisar(tree->esq, dado);
 
-  if(compara(tree->dado, dado) == 0){
-  	printf("O valor %d está na arvore.\n\n", dado);
-    return tree;
-  }
-
-  if(compara(tree->dado, dado)!=0){
-  	printf("O valor %d não está na arvore.\n\n", dado);
-    return pesquisar(tree->esq, dado);
-  }
-  else{
-    return pesquisar(tree->dir, dado);
-    printf("pesquisa 3");
-  }
+    if(achou == NULL){
+        achou = pesquisar(tree->dir, dado);
+	}
+    return achou;
 }
 
 void esvaziar(t_arvore *tree){
@@ -206,6 +245,7 @@ void esvaziar(t_arvore *tree){
 }
 
 void exibir(t_arvore tree, int col, int lin, int desloc){
+  
   if(tree == NULL){
     return;
   }
@@ -217,8 +257,8 @@ void exibir(t_arvore tree, int col, int lin, int desloc){
   if(tree->dir != NULL){
     exibir(tree->dir,col+desloc,lin+2,desloc/2+1);
   }
-}
-
+  }
+  
 int compara(int dado, int dado1){
 	int r;
   if((dado - dado1) == 0){
@@ -265,12 +305,11 @@ t_arvore loadTree(){
 	char * valor = strtok(linha, ",");
 	//convertendo o valor obtido anteriormente e atribuindo-o ao dado da arvore
 	lista->dado = atoi(valor);
-	//auxiliar pra não perder o anterior
-	t_no * aux = lista;
 	
-	//enquanto não for o fim do arquivo, repete o processo anterior
+	t_no * aux = lista;
+
 	while(!feof(arquivo)){
-        t_no * novo = (t_no*) malloc (sizeof(t_no));
+        t_no * novo = (t_no*) malloc(sizeof(t_no));
             
         if(!novo) {
         	return 0;
@@ -279,7 +318,33 @@ t_arvore loadTree(){
         novo->dado = atoi(strtok(linha, ","));
         inserir(&lista, novo->dado);
         fgets(linha, 60, arquivo);
+        t_no * aux = lista;
     }
     fclose(arquivo);
     return lista;
 }
+
+void exibirPreOrdem(t_arvore tree){
+    if(tree!=NULL) {
+        printf("%d ", tree->dado);
+        exibirPreOrdem(tree->esq);
+        exibirPreOrdem(tree->dir);
+    }
+}
+
+void exibirInOrdem(t_arvore tree){
+    if(tree!=NULL) {
+        exibirInOrdem(tree->esq);
+        printf("%d ", tree->dado);
+        exibirInOrdem(tree->dir);
+    }
+}
+
+void exibirPosOrdem(t_arvore tree){
+    if(tree!=NULL) {
+        exibirPosOrdem(tree->esq);
+        exibirPosOrdem(tree->dir);
+        printf("%d ", tree->dado);
+    }
+}
+
